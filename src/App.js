@@ -1,26 +1,43 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from 'react'
+import { Redirect, Route, Switch } from 'react-router-dom'
+import { connect } from 'react-redux'
+import NProgress from 'nprogress'
+import { getRouterData } from './router/router'
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+@connect(
+  ({ userInfo }) => ({ userInfo })
+)
+class App extends Component {
+  componentWillUpdate () {
+    NProgress.start()
+  }
+
+  componentDidUpdate () {
+    NProgress.done()
+  }
+
+  render () {
+    const { userInfo } = this.props
+    let routerData = getRouterData()
+    let UserLayout = routerData['/user'].component
+    let BasicLayout = routerData['/'].component
+    return (
+      <div className="App">
+        <Switch>
+          <Route path="/user" render={(props) => {
+            return !userInfo
+              ? <UserLayout {...props} routerData={routerData}/>
+              : <Redirect to="/"/>
+          }}/>
+          <Route path="/" render={(props) => {
+            return userInfo
+              ? <BasicLayout {...props} routerData={routerData}/>
+              : <Redirect to="/user/login"/>
+          }}/>
+        </Switch>
+      </div>
+    )
+  }
 }
 
-export default App;
+export default App
